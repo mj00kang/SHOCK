@@ -2000,21 +2000,21 @@ export default function App() {
       <Modal
         isOpen={selectedNotice !== null}
         onClose={() => setSelectedNotice(null)}
-        title="📢 샥 공식 안내 공지문"
+        title="📢 샥 공지사항"
         size="md"
       >
         {selectedNotice && (
           <div className="space-y-4 text-left">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 text-xs text-slate-400 font-mono font-bold">
-              <span className="text-sky-600 uppercase">SYSTEM OFFICAL REPORT</span>
-              <span>보도 공표일: {selectedNotice.createdAt}</span>
+              <span className="text-sky-600 uppercase">OFFICIAL</span>
+              <span>등록일: {selectedNotice.createdAt}</span>
             </div>
 
             <h3 className="font-display font-black text-slate-900 text-base">
               {selectedNotice.title}
             </h3>
 
-            <p className="p-4 bg-slate-50 border border-slate-150 rounded-xl text-slate-700 text-xs leading-relaxed font-sans">
+            <p className="p-4 bg-slate-50 border border-slate-150 rounded-xl text-slate-700 text-xs leading-relaxed font-sans mt-2 whitespace-pre-wrap">
               {selectedNotice.content}
             </p>
 
@@ -2022,7 +2022,7 @@ export default function App() {
               onClick={() => setSelectedNotice(null)}
               className="cursor-pointer w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2.5 rounded-xl shadow-xs"
             >
-              공지사항 확인 닫기
+              닫기
             </button>
           </div>
         )}

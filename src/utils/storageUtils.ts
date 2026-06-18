@@ -629,11 +629,8 @@ export const saveComments = (comments: Comment[]) => {
 
 export const getNotices = (): Notice[] => {
   initStorage();
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.NOTICES) || '[]');
-  } catch {
-    return INITIAL_NOTICES;
-  }
+  localStorage.setItem(STORAGE_KEYS.NOTICES, JSON.stringify(INITIAL_NOTICES));
+  return INITIAL_NOTICES;
 };
 
 export const getLuckyEvents = (): LuckyEventState[] => {

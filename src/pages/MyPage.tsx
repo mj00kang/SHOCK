@@ -1051,46 +1051,39 @@ export default function MyPage({
                         {relatedOrder && (
                           <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between flex-wrap gap-2 text-xs">
                             <div className="space-y-1">
-                              <p className="text-[10px] text-gray-400 font-medium">최종 낙찰 수집가: <strong className="text-gray-900 font-bold">[{relatedOrder.buyerNickname}]</strong></p>
+                              <p className="text-[12px] text-gray-400 font-medium">최종 낙찰 수집가: <strong className="text-gray-900 font-bold">[{relatedOrder.buyerNickname}]</strong></p>
                               {(!relatedOrder.deliveryStatus || relatedOrder.deliveryStatus === 'preparing') && relatedOrder.paymentStatus === 'paid' && !relatedOrder.trackingNumber && (
                                 <div className="mt-1 space-y-1.5">
-                                  <p className="text-[10px] text-gray-900 font-medium font-sans">
-                                    구매자 결제가 완료되었습니다. 운송장번호를 입력해주세요.
+                                  <p className="text-[12px] text-gray-900 font-medium font-sans">
+                                    구매자 결제가 완료되었습니다. 배송 또는 수거 정보를 등록해주세요.
                                   </p>
-                                  <button
-                                    type="button"
-                                    onClick={() => setShippingInputOrderId(relatedOrder.id)}
-                                    className="cursor-pointer bg-gray-900 hover:bg-gray-900 text-white font-sans font-black text-[10px] px-3 py-1.5 rounded-lg shadow-sm"
-                                  >
-                                    운송장 입력
-                                  </button>
                                 </div>
                               )}
                               {relatedOrder.deliveryStatus === 'shipping' && relatedOrder.trackingNumber && (
-                                <div className="mt-1 text-[10px] text-gray-600">
+                                <div className="mt-1 text-[12px] text-gray-600">
                                   <p className="font-bold">발송 정보: {relatedOrder.courier} ({relatedOrder.trackingNumber})</p>
                                   <p className="text-gray-400">발송일: {relatedOrder.shippedAt?.substring(0,10)}</p>
                                 </div>
                               )}
                             </div>
                             
-                            <div className="flex flex-col gap-1 items-end">
+                            <div className={canEnterTracking ? "order-status-action compact ml-auto mt-2 sm:mt-0" : "flex flex-col gap-1 items-end ml-auto mt-2 sm:mt-0"}>
                               {canEnterTracking ? (
                                 <>
-                                  <div className="flex gap-1 mb-1">
-                                    <span className="text-gray-900 font-black text-[10px] bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-md">
+                                  <div className="order-status-chip-row">
+                                    <span className="order-status-chip bg-gray-100 border border-gray-200 text-gray-900">
                                       결제 완료
                                     </span>
-                                    <span className="text-gray-600 font-black text-[10px] bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-md">
+                                    <span className="order-status-chip bg-gray-100 border border-gray-200 text-gray-600">
                                       배송대기
                                     </span>
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => setShippingInputOrderId(relatedOrder.id)}
-                                    className="cursor-pointer bg-gray-900 hover:bg-gray-900 text-white font-sans font-black text-[10px] px-3 py-1.5 rounded-lg shadow-sm"
+                                    className="order-action-button-compact cursor-pointer bg-gray-900 hover:bg-gray-800 text-white transition-colors"
                                   >
-                                    배송 처리 (운송장 등록)
+                                    배송정보 등록
                                   </button>
                                 </>
                               ) : relatedOrder.deliveryStatus === 'shipping' && relatedOrder.trackingNumber ? (
@@ -1166,7 +1159,7 @@ export default function MyPage({
                                       saveProducts(updatedProducts);
                                       saveOrders(storedOrders);
                                       
-                                      alert(`💡 데모 구매 완료가 무사히 성사되었습니다!\n- 가상 구매자: 정밀수집덕후\n- 거래 체결가: ${targetPrice.toLocaleString()}원\n\n이제 목록의 [운송장 입력] 또는 [배송 처리] 버튼을 통해 발송 흐름을 계속 테스트해 보세요!`);
+                                      alert(`💡 데모 구매 완료가 무사히 성사되었습니다!\n- 가상 구매자: 정밀수집덕후\n- 거래 체결가: ${targetPrice.toLocaleString()}원\n\n이제 목록의 [배송정보 등록] 버튼을 통해 발송 흐름을 계속 테스트해 보세요!`);
                                       onRefreshData?.();
                                     }
                                   );
@@ -2639,9 +2632,9 @@ export default function MyPage({
 
           {/* 샥 방문수거 신청 모달 */}
           {shippingInputOrderId && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-              <div className="bg-white rounded-[24px] border border-gray-150 p-6 max-w-lg w-full space-y-4 my-8 relative">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+              <div className="pickup-modal">
+                <div className="pickup-modal-header flex items-center justify-between">
                   <div className="flex items-center gap-2 text-left">
                     <span className="p-1 px-2.5 bg-gray-900 text-white rounded-md text-[10px] uppercase font-black">Contract Delivery</span>
                     <h4 className="font-sans font-black text-gray-900 text-[16px]">📦 샥 계약택배 방문수거 신청</h4>
@@ -2655,28 +2648,29 @@ export default function MyPage({
                   </button>
                 </div>
 
-                <form onSubmit={handleSellerShippingSubmit} className="space-y-4 text-left">
-                  {/* 수거 장소 */}
+                <div className="pickup-modal-body">
+                  <form id="shipping-form" onSubmit={handleSellerShippingSubmit} className="space-y-4 text-left">
+                    {/* 수거 장소 */}
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-750 mb-1">수거지 상세 주소</label>
+                    <label className="block text-[13px] font-bold text-gray-750 mb-1">수거지 상세 주소</label>
                     <input
                       type="text"
                       required
                       value={pickupAddress}
                       onChange={(e) => setPickupAddress(e.target.value)}
                       placeholder="수거기사님이 방문할 정확한 상세 주소"
-                      className="w-full h-10 border border-gray-200 rounded-xl px-3 text-xs font-semibold focus:ring-1 focus:ring-gray-900"
+                      className="w-full h-10 border border-gray-200 rounded-xl px-3 text-[14px] font-semibold focus:ring-1 focus:ring-gray-900"
                     />
                   </div>
 
                   {/* 수거방식 및 수거 일정 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-750 mb-1">수거 방식</label>
+                      <label className="block text-[13px] font-bold text-gray-750 mb-1">수거 방식</label>
                       <select
                         value={pickupMethod}
                         onChange={(e) => setPickupMethod(e.target.value)}
-                        className="w-full h-10 border border-gray-200 rounded-xl px-2.5 text-xs font-semibold bg-white cursor-pointer"
+                        className="w-full h-10 border border-gray-200 rounded-xl px-2.5 text-[14px] font-semibold bg-white cursor-pointer"
                       >
                         <option value="문앞 수거">🚪 문앞 수거</option>
                         <option value="경비실 수거">👮 경비실 수거</option>
@@ -2688,13 +2682,13 @@ export default function MyPage({
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-750 mb-1">수거 희망 일정</label>
+                      <label className="block text-[13px] font-bold text-gray-750 mb-1">수거 희망 일정</label>
                       <input
                         type="date"
                         required
                         value={pickupDate}
                         onChange={(e) => setPickupDate(e.target.value)}
-                        className="w-full h-10 border border-gray-200 rounded-xl px-3 text-xs font-bold font-mono"
+                        className="w-full h-10 border border-gray-200 rounded-xl px-3 text-[14px] font-bold font-mono"
                       />
                     </div>
                   </div>
@@ -2702,11 +2696,11 @@ export default function MyPage({
                   {/* 수거 시간대 & 메모 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-750 mb-1">방문희망 시간대</label>
+                      <label className="block text-[13px] font-bold text-gray-750 mb-1">방문희망 시간대</label>
                       <select
                         value={pickupTimeSlot}
                         onChange={(e) => setPickupTimeSlot(e.target.value)}
-                        className="w-full h-10 border border-gray-200 rounded-xl px-2.5 text-xs font-semibold bg-white cursor-pointer"
+                        className="w-full h-10 border border-gray-200 rounded-xl px-2.5 text-[14px] font-semibold bg-white cursor-pointer"
                       >
                         <option value="오전 09:00~12:00">🌅 오전 09:00 ~ 12:00</option>
                         <option value="오후 13:00~16:00">☀️ 오후 13:00 ~ 16:00</option>
@@ -2715,13 +2709,13 @@ export default function MyPage({
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-750 mb-1">기사님께 남길 메모</label>
+                      <label className="block text-[13px] font-bold text-gray-750 mb-1">기사님께 남길 메모</label>
                       <input
                         type="text"
                         placeholder="예: 벨 누르지 말고 문 앞에 놔주세요."
                         value={shippingMemo}
                         onChange={(e) => setShippingMemo(e.target.value)}
-                        className="w-full h-10 border border-gray-200 rounded-xl px-3 text-xs font-bold"
+                        className="w-full h-10 border border-gray-200 rounded-xl px-3 text-[14px] font-bold"
                       />
                     </div>
                   </div>
@@ -2733,11 +2727,11 @@ export default function MyPage({
                       <p className="text-[11px] text-gray-650 font-semibold">🏪 편의점 위탁 점포에 맡기신 후 택배사와 운송장번호를 하단에 기입바랍니다.</p>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-450 mb-1">이용 편의점/택배사</label>
+                          <label className="block text-[12px] font-bold text-slate-450 mb-1">이용 편의점/택배사</label>
                           <select
                             value={shippingCarrier}
                             onChange={(e) => setShippingCarrier(e.target.value)}
-                            className="w-full h-9 border border-gray-200 rounded-xl px-2.5 text-xs bg-white cursor-pointer"
+                            className="w-full h-9 border border-gray-200 rounded-xl px-2.5 text-[14px] bg-white cursor-pointer"
                           >
                             <option value="GS25편의점택배">GS25편의점택배</option>
                             <option value="CU끼리택배">CU끼리택배</option>
@@ -2746,13 +2740,13 @@ export default function MyPage({
                           </select>
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-450 mb-1">받으신 운송장번호</label>
+                          <label className="block text-[12px] font-bold text-slate-450 mb-1">받으신 운송장번호</label>
                           <input
                             type="text"
                             placeholder="숫자만 입력"
                             value={shippingTrackingNumber}
                             onChange={(e) => setShippingTrackingNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                            className="w-full h-9 border border-gray-200 rounded-xl px-3 text-xs font-bold font-mono"
+                            className="w-full h-9 border border-gray-200 rounded-xl px-3 text-[14px] font-bold font-mono"
                           />
                         </div>
                       </div>
@@ -2762,7 +2756,7 @@ export default function MyPage({
                    {/* 사진 증빙 셀렉터 (분실 및 분쟁 방지용) */}
                   <div className="space-y-4">
                     <div>
-                      <p className="block text-[12px] font-bold text-gray-800">📸 수거 증빙 사진 등록</p>
+                      <p className="block text-[14px] font-bold text-gray-800">📸 수거 증빙 사진 등록</p>
                       <p className="text-[11px] text-gray-500 mt-0.5">분실 및 분쟁 방지를 위해 포장 완료 사진과 수거 장소 사진을 등록해 주세요.</p>
                     </div>
 
@@ -2782,22 +2776,22 @@ export default function MyPage({
                       onChange={handlePickupPlacePhotoChange} 
                     />
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="pickup-photo-grid">
                       {/* 포장 완료물 사진 카드 */}
-                      <div className="p-3.5 border border-gray-150 rounded-[19px] space-y-3 bg-white hover:border-gray-300 transition-colors">
-                        <div className="space-y-1">
-                          <span className="text-[11px] font-extrabold text-gray-700 block">① 포장 완료 사진 등록</span>
-                          <span className="text-[10px] text-gray-400 block font-normal">“상품을 포장한 상태가 보이도록 촬영해주세요.”</span>
+                      <div className="pickup-photo-card transition-colors">
+                        <div className="pickup-photo-card-header">
+                          <h4>① 포장 완료 사진 등록</h4>
+                          <p>“상품을 포장한 상태가 보이도록 촬영해주세요.”</p>
                         </div>
                         
                         {/* Interactive Drag & Upload visual box */}
                         <div 
                           onClick={() => packageFileInputRef.current?.click()}
-                          className="border border-dashed border-[#CBD5E1] rounded-[14px] min-h-[120px] flex flex-col items-center justify-center cursor-pointer bg-[#F8FAFC] p-2 hover:bg-slate-100 transition-all select-none group relative overflow-hidden"
+                          className="pickup-upload-box border border-dashed border-[#CBD5E1] rounded-[14px] cursor-pointer bg-[#F8FAFC] p-2 hover:bg-slate-100 transition-all select-none group relative overflow-hidden"
                         >
                           {packagePhotoPreview ? (
-                            <div className="w-full h-full relative group">
-                              <img src={packagePhotoPreview} className="w-full h-[120px] object-cover rounded-[11px]" referrerPolicy="no-referrer" />
+                            <div className="w-full h-full relative group flex items-center justify-center">
+                              <img src={packagePhotoPreview} className="w-full h-full object-cover rounded-[11px]" referrerPolicy="no-referrer" />
                               <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[9px] py-1 text-center font-bold opacity-0 group-hover:opacity-100 transition-opacity">
                                 클릭하여 파일 변경
                               </div>
@@ -2805,18 +2799,18 @@ export default function MyPage({
                           ) : (
                             <div className="text-center space-y-1.5 p-4">
                               <span className="text-2xl block text-slate-400 group-hover:scale-110 transition-transform">📦</span>
-                              <p className="text-[10.5px] font-bold text-gray-500">포장 사진 추가 (클릭)</p>
-                              <p className="text-[9px] text-gray-400 font-normal">정면에서 박스가 보이게 촬영</p>
+                              <p className="text-[11.5px] font-bold text-gray-500">포장 사진 추가</p>
+                              <p className="text-[10px] text-gray-400 font-normal">정면에서 박스가 보이게 촬영</p>
                             </div>
                           )}
                         </div>
 
                         {/* Control buttons */}
-                        <div className="flex gap-1.5 justify-center">
+                        <div className="pickup-file-button flex gap-1.5 justify-center">
                           <button
                             type="button"
                             onClick={() => packageFileInputRef.current?.click()}
-                            className="cursor-pointer bg-[#F1F5F9] hover:bg-[#E2E8F0] text-gray-750 text-[10px] font-extrabold h-[28px] px-2.5 rounded-lg flex items-center justify-center gap-1 transition-colors"
+                            className="cursor-pointer bg-[#F1F5F9] hover:bg-[#E2E8F0] text-gray-750 text-[12px] font-extrabold h-[28px] px-2.5 rounded-lg flex items-center justify-center gap-1 transition-colors"
                           >
                             📷 파일 선택
                           </button>
@@ -2827,7 +2821,7 @@ export default function MyPage({
                                 setPackagePhotoPreview('');
                                 if (packageFileInputRef.current) packageFileInputRef.current.value = '';
                               }}
-                              className="cursor-pointer bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-extrabold h-[28px] px-2.5 rounded-lg flex items-center justify-center gap-1 transition-colors"
+                              className="cursor-pointer bg-rose-50 hover:bg-rose-100 text-rose-700 text-[12px] font-extrabold h-[28px] px-2.5 rounded-lg flex items-center justify-center gap-1 transition-colors"
                             >
                               ❌ 삭제
                             </button>
@@ -2835,23 +2829,21 @@ export default function MyPage({
                         </div>
 
                         {/* One-click examples preset */}
-                        <div className="space-y-1.5 pt-1 border-t border-dotted border-gray-150">
-                          <span className="text-[9.5px] text-slate-450 font-extrabold block">💡 원클릭 예시 적용:</span>
-                          <div className="flex gap-2">
+                        <div className="pickup-example-area pt-1 border-t border-dotted border-gray-150">
+                          <div className="pickup-example-title text-[11.5px] text-slate-450 font-extrabold">💡 원클릭 예시 적용:</div>
+                          <div className="pickup-example-buttons">
                             <button
                               type="button"
                               onClick={() => setPackagePhotoPreview('https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&q=80&w=300')}
-                              className={`cursor-pointer flex-1 py-1 px-2 border rounded-lg text-[9px] font-extrabold bg-white hover:bg-gray-50 flex items-center gap-1.5 justify-center min-h-[32px] transition-all ${packagePhotoPreview && packagePhotoPreview.includes('1589939705384') ? 'border-gray-900 ring-2 ring-gray-900/10 text-gray-900 font-black' : 'border-gray-200 text-gray-500'}`}
+                              className={`cursor-pointer w-full py-1 px-1 border rounded-lg text-[11px] font-extrabold bg-white hover:bg-gray-50 flex items-center justify-center min-h-[32px] transition-all ${packagePhotoPreview && packagePhotoPreview.includes('1589939705384') ? 'border-gray-900 ring-2 ring-gray-900/10 text-gray-900 font-black' : 'border-gray-200 text-gray-500'}`}
                             >
-                              <img src="https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&q=80&w=100" className="w-[18px] h-[18px] object-cover rounded pointer-events-none border border-gray-100" referrerPolicy="no-referrer" />
                               포장 완료 박스
                             </button>
                             <button
                               type="button"
                               onClick={() => setPackagePhotoPreview('https://images.unsplash.com/photo-1518932945647-7a1c969f8be2?auto=format&fit=crop&q=80&w=300')}
-                              className={`cursor-pointer flex-1 py-1 px-2 border rounded-lg text-[9px] font-extrabold bg-white hover:bg-gray-50 flex items-center gap-1.5 justify-center min-h-[32px] transition-all ${packagePhotoPreview && packagePhotoPreview.includes('1518932945647') ? 'border-gray-900 ring-2 ring-gray-900/10 text-gray-900 font-black' : 'border-gray-200 text-gray-500'}`}
+                              className={`cursor-pointer w-full py-1 px-1 border rounded-lg text-[11px] font-extrabold bg-white hover:bg-gray-50 flex items-center justify-center min-h-[32px] transition-all ${packagePhotoPreview && packagePhotoPreview.includes('1518932945647') ? 'border-gray-900 ring-2 ring-gray-900/10 text-gray-900 font-black' : 'border-gray-200 text-gray-500'}`}
                             >
-                              <img src="https://images.unsplash.com/photo-1518932945647-7a1c969f8be2?auto=format&fit=crop&q=80&w=100" className="w-[18px] h-[18px] object-cover rounded pointer-events-none border border-gray-100" referrerPolicy="no-referrer" />
                               완충재 포장
                             </button>
                           </div>
@@ -2859,20 +2851,20 @@ export default function MyPage({
                       </div>
 
                       {/* 수거 장소 사진 카드 */}
-                      <div className="p-3.5 border border-gray-150 rounded-[19px] space-y-3 bg-white hover:border-gray-300 transition-colors">
-                        <div className="space-y-1">
-                          <span className="text-[11px] font-extrabold text-gray-700 block">② 수거 장소 사진 등록</span>
-                          <span className="text-[10px] text-gray-400 block font-normal">“문앞, 경비실, 무인택배함 등 실제 위치가 보이게 촬영해주세요.”</span>
+                      <div className="pickup-photo-card transition-colors">
+                        <div className="pickup-photo-card-header">
+                          <h4>② 수거 장소 사진 등록</h4>
+                          <p>“문앞, 경비실, 무인택배함 등 실제 위치가 보이게 촬영해주세요.”</p>
                         </div>
                         
                         {/* Interactive Drag & Upload visual box */}
                         <div 
                           onClick={() => pickupPlaceFileInputRef.current?.click()}
-                          className="border border-dashed border-[#CBD5E1] rounded-[14px] min-h-[120px] flex flex-col items-center justify-center cursor-pointer bg-[#F8FAFC] p-2 hover:bg-slate-100 transition-all select-none group relative overflow-hidden"
+                          className="pickup-upload-box border border-dashed border-[#CBD5E1] rounded-[14px] cursor-pointer bg-[#F8FAFC] p-2 hover:bg-slate-100 transition-all select-none group relative overflow-hidden"
                         >
                           {pickupPlacePhotoPreview ? (
-                            <div className="w-full h-full relative group">
-                              <img src={pickupPlacePhotoPreview} className="w-full h-[120px] object-cover rounded-[11px]" referrerPolicy="no-referrer" />
+                            <div className="w-full h-full relative group flex items-center justify-center">
+                              <img src={pickupPlacePhotoPreview} className="w-full h-full object-cover rounded-[11px]" referrerPolicy="no-referrer" />
                               <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[9px] py-1 text-center font-bold opacity-0 group-hover:opacity-100 transition-opacity">
                                 클릭하여 파일 변경
                               </div>
@@ -2880,18 +2872,18 @@ export default function MyPage({
                           ) : (
                             <div className="text-center space-y-1.5 p-4">
                               <span className="text-2xl block text-slate-400 group-hover:scale-110 transition-transform">🏠</span>
-                              <p className="text-[10.5px] font-bold text-gray-500">수거 장소 추가 (클릭)</p>
-                              <p className="text-[9px] text-gray-400 font-normal">배송될 실제 장소가 식별되게 촬영</p>
+                              <p className="text-[11.5px] font-bold text-gray-500">수거 장소 추가</p>
+                              <p className="text-[10px] text-gray-400 font-normal">배송될 실제 장소가 식별되게 촬영</p>
                             </div>
                           )}
                         </div>
 
                         {/* Control buttons */}
-                        <div className="flex gap-1.5 justify-center">
+                        <div className="pickup-file-button flex gap-1.5 justify-center">
                           <button
                             type="button"
                             onClick={() => pickupPlaceFileInputRef.current?.click()}
-                            className="cursor-pointer bg-[#F1F5F9] hover:bg-[#E2E8F0] text-gray-750 text-[10px] font-extrabold h-[28px] px-2.5 rounded-lg flex items-center justify-center gap-1 transition-colors"
+                            className="cursor-pointer bg-[#F1F5F9] hover:bg-[#E2E8F0] text-gray-750 text-[12px] font-extrabold h-[28px] px-2.5 rounded-lg flex items-center justify-center gap-1 transition-colors"
                           >
                             📷 파일 선택
                           </button>
@@ -2902,7 +2894,7 @@ export default function MyPage({
                                 setPickupPlacePhotoPreview('');
                                 if (pickupPlaceFileInputRef.current) pickupPlaceFileInputRef.current.value = '';
                               }}
-                              className="cursor-pointer bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-extrabold h-[28px] px-2.5 rounded-lg flex items-center justify-center gap-1 transition-colors"
+                              className="cursor-pointer bg-rose-50 hover:bg-rose-100 text-rose-700 text-[12px] font-extrabold h-[28px] px-2.5 rounded-lg flex items-center justify-center gap-1 transition-colors"
                             >
                               ❌ 삭제
                             </button>
@@ -2910,24 +2902,22 @@ export default function MyPage({
                         </div>
 
                         {/* One-click examples preset */}
-                        <div className="space-y-1.5 pt-1 border-t border-dotted border-gray-150">
-                          <span className="text-[9.5px] text-slate-450 font-extrabold block">💡 원클릭 예시 적용:</span>
-                          <div className="flex gap-2">
+                        <div className="pickup-example-area pt-1 border-t border-dotted border-gray-150">
+                          <div className="pickup-example-title text-[11.5px] text-slate-450 font-extrabold">💡 원클릭 예시 적용:</div>
+                          <div className="pickup-example-buttons">
                             <button
                               type="button"
                               onClick={() => setPickupPlacePhotoPreview('https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=300')}
-                              className={`cursor-pointer flex-1 py-1 px-2 border rounded-lg text-[9px] font-extrabold bg-white hover:bg-gray-50 flex items-center gap-1.5 justify-center min-h-[32px] transition-all ${pickupPlacePhotoPreview && pickupPlacePhotoPreview.includes('1513694203232') ? 'border-gray-900 ring-2 ring-gray-900/10 text-gray-900 font-black' : 'border-gray-200 text-gray-500'}`}
+                              className={`cursor-pointer w-full py-1 px-1 border rounded-lg text-[11px] font-extrabold bg-white hover:bg-gray-50 flex items-center justify-center min-h-[32px] transition-all ${pickupPlacePhotoPreview && pickupPlacePhotoPreview.includes('1513694203232') ? 'border-gray-900 ring-2 ring-gray-900/10 text-gray-900 font-black' : 'border-gray-200 text-gray-500'}`}
                             >
-                              <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=100" className="w-[18px] h-[18px] object-cover rounded pointer-events-none border border-gray-100" referrerPolicy="no-referrer" />
                               아파트 공동현관
                             </button>
                             <button
                               type="button"
                               onClick={() => setPickupPlacePhotoPreview('https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&q=80&w=300')}
-                              className={`cursor-pointer flex-1 py-1 px-2 border rounded-lg text-[9px] font-extrabold bg-white hover:bg-gray-50 flex items-center gap-1.5 justify-center min-h-[32px] transition-all ${pickupPlacePhotoPreview && pickupPlacePhotoPreview.includes('1506157786151') ? 'border-gray-900 ring-2 ring-gray-900/10 text-gray-900 font-black' : 'border-gray-200 text-gray-500'}`}
+                              className={`cursor-pointer w-full py-1 px-1 border rounded-lg text-[11px] font-extrabold bg-white hover:bg-gray-50 flex items-center justify-center min-h-[32px] transition-all ${pickupPlacePhotoPreview && pickupPlacePhotoPreview.includes('1506157786151') ? 'border-gray-900 ring-2 ring-gray-900/10 text-gray-900 font-black' : 'border-gray-200 text-gray-500'}`}
                             >
-                              <img src="https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&q=80&w=100" className="w-[18px] h-[18px] object-cover rounded pointer-events-none border border-gray-100" referrerPolicy="no-referrer" />
-                              경비실 및 무인택배함
+                              무인택배함/경비실
                             </button>
                           </div>
                         </div>
@@ -2936,21 +2926,22 @@ export default function MyPage({
                   </div>
 
                   {/* 안내 수칙 / 경고 배너 */}
-                  <div className="space-y-1.5 pt-1">
-                    <div className="p-3 bg-indigo-50/75 text-indigo-805 rounded-xl border border-indigo-100 text-[11px] leading-relaxed">
-                      🛡️ <strong>안전한 보상 배송 안내:</strong><br />
-                      분실 및 분쟁 방지를 위해 포장 완료 사진과 수거 장소 사진을 등록해 주세요. 등록된 증빙 사진은 수거 및 이송 도중 발생할 수 있는 분실 피해 시 즉각적인 피해 보상의 주요 근거로 활용됩니다.
-                    </div>
-
-                    {(pickupMethod === '문앞 수거' || pickupMethod === '대면 수거') && (
-                      <div className="p-3 bg-amber-50/75 text-amber-805 rounded-xl border border-amber-100 text-[11px] leading-relaxed">
-                        💡 <strong>고가 및 귀중 등급 애장품 안내:</strong><br />
-                        고가 또는 희귀 애장품은 문앞 수거보다 <u>대면 수거</u>, <u>경비실 수거</u> 또는 <u>무인택배함 수거</u>를 권장합니다.
-                      </div>
-                    )}
+                  <div className="pickup-notice-box bg-indigo-50/75 text-indigo-805 border border-indigo-100">
+                    🛡️ <strong>안전한 보상 배송 안내:</strong><br />
+                    분실 및 분쟁 방지를 위해 포장 완료 사진과 수거 장소 사진을 등록해 주세요. 등록된 증빙 사진은 발생할 수 있는 피해 보상의 주요 근거로 활용됩니다.
                   </div>
 
-                  <div className="flex gap-2 pt-2 border-t border-gray-100">
+                  {(pickupMethod === '문앞 수거' || pickupMethod === '대면 수거') && (
+                    <div className="pickup-notice-box bg-amber-50/75 text-amber-805 border border-amber-100 mt-2">
+                      💡 <strong>고가 및 귀중 등급 애장품 안내:</strong><br />
+                      고가 애장품은 <u>대면 수거/경비실 수거/무인택배함</u>을 권장합니다.
+                    </div>
+                  )}
+                  </form>
+                </div>
+
+                <div className="pickup-modal-footer">
+                  <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => setShippingInputOrderId(null)}
@@ -2959,13 +2950,14 @@ export default function MyPage({
                       취소
                     </button>
                     <button
+                      form="shipping-form"
                       type="submit"
                       className="cursor-pointer flex-1 py-2.5 bg-gray-900 text-white hover:bg-gray-800 rounded-xl text-xs font-black shadow-sm text-center"
                     >
                       방문수거 신청 완료하기
                     </button>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
           )}
