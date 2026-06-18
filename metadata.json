@@ -1,0 +1,8 @@
+{
+  "name": "Remix: 샥(SYAK) - 경매형 중고거래 플랫폼",
+  "description": "중고거래에 상향식/하향식 경매 방식을 결합한 혁신적인 C2C 경매형 중고거래 플랫폼 샥(SYAK)입니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
